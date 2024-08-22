@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Map - plotshot</title>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        #map {
+            height: 100%;
+        }
+        .legend {
+            background: white;
+            padding: 10px;
+            line-height: 1.5em;
+            font-size: 12px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+</head>
+<body>
+<div id="map"></div>
+<script>
+    // Initialize the map centered on Bodø Havn with zoom level 12
+    var map = L.map('map').setView([67.2828, 14.3984], 12);
+
+    // Base layers
+    var baseLayers = {
+        "Map": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {              // Map
+            attribution: 'Map data © OpenStreetMap contributors'
+        }),
+        "Satellite": L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { // Satelite
+            attribution: 'Tiles © Esri'
+        }),
+        "Hybrid": L.tileLayer('https://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', {         // Hybrid
+            attribution: 'Map data © Google',
+            subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
+        }),
+        "Terrain": L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {            // Terrain
+            attribution: 'Map data © OpenTopoMap contributors'
+        })
+    };
+
+    // GEBCO Bathymetry Layer with isometric lines
+    var gebcoBathymetry = L.tileLayer.wms('https://www.gebco.net/data_and_products/gebco_web_services/web_map_service/mapserv', {
+        layers: 'GEBCO_LATEST',
+        format: 'image/png',
+        transparent: true,
+        attribution: 'Bathymetry © GEBCO',
+        opacity: 0.5
+    }).addTo(map);
+
+    // Marine Markings
+    var marineLayer = L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
+        attribution: 'Marine Data © OpenSeaMap contributors'
+    });
+
+    // Add layer control to the map
+    L.control.layers(baseLayers, {
+        "Bathymetry": gebcoBathymetry,
+        "Marine": marineLayer
+    }).addTo(map);
+
+    // Add a legend for bathymetry
+    var legend = L.control({ position: 'bottomright' });
+
+    legend.onAdd = function () {
+        var div = L.DomUtil.create('div', 'legend');
+        div.innerHTML += '<strong>Bathymetry (meters)</strong><br>';
+        div.innerHTML += '<i style="background: #0000FF; opacity: 0.5;"></i><span>-10m</span><br>';
+        div.innerHTML += '<i style="background: #0066FF; opacity: 0.5;"></i><span>-20m</span><br>';
+        div.innerHTML += '<i style="background: #00CCFF; opacity: 0.5;"></i><span>-50m</span><br>';
+        div.innerHTML += '<i style="background: #00FFFF; opacity: 0.5;"></i><span>-100m</span><br>';
+        div.innerHTML += '<i style="background: #66FFFF; opacity: 0.5;"></i><span>-200m</span><br>';
+        return div;
+    };
+
+    legend.addTo(map);
+
+    // Set initial layer to Map
+    baseLayers["Map"].addTo(map);
+
+    console.log("Map setup with bathymetry legend and isometric lines complete.");
+</script>
+</body>
+</html>
